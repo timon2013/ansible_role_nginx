@@ -1,0 +1,6 @@
+---
+- name: Install packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ redhat_nginx_package }}"

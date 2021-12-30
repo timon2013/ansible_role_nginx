@@ -1,0 +1,12 @@
+---
+- name: Include OS Specific config tasks
+  include: nginx-unit.yml
+
+- name: Include OS Specific config tasks
+  include: wordpress.yml
+
+- name: "Ensure Nginx is started and enabled at boot."
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes

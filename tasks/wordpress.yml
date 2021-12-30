@@ -1,0 +1,45 @@
+---
+# Configuration for wordpress
+
+- name: Create directories
+  file:
+    path: /etc/nginx/{{ item }}
+    state: directory
+  loop: 
+    - sites-available
+    - sites-enabled
+    - global
+
+- name: Copy template nginx.conf
+  template:
+    src: nginx_mian_wordpress.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Copy vhost
+  template:
+    src: unit_wordpress_vhost.conf.j2
+    dest: /etc/nginx/sites-available/unit_wordpress_vhost.conf.conf
+
+#ln -s ../sites-available/unit_wordpress_vhost.conf.conf ./unit_wordpress_vhost.conf.conf
+- name: Create a symbolic link and enble vhost
+  file:
+    src: /etc/nginx/sites-available/unit_wordpress_vhost.conf.conf
+    dest: /etc/nginx/sites-enabled/unit_wordpress_vhost.conf.conf
+    owner: root
+    group: root
+    state: link
+
+#- name: Copy global restriction
+#  template:
+#    src: nginx_global_restriction.conf.j2
+#    dest:  /etc/nginx/conf.d/global/restrictions.conf
+
+#- name: Copy nginx_global_singlesite_wordpress.conf.j2
+#  template:
+#    src: nginx_global_singlesite_wordpress.conf.j2
+#    dest:  /etc/nginx/conf.d/global/singlesite_wordpress.conf
+
+#- name: Copy nginx_vhost.conf.j2
+#  template:
+#    src: nginx_vhost.conf.j2
+#    dest: /etc/nginx/conf.d/nginx_vhost.conf

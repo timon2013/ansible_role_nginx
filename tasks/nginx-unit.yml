@@ -1,0 +1,98 @@
+---
+- name: Add repository nginx unit
+  copy:
+    content: |
+      [unit]
+      name=unit repo
+      baseurl=https://packages.nginx.org/unit/centos/$releasever/$basearch/
+      gpgcheck=0
+      enabled=1
+    dest: /etc/yum.repos.d/unit.repo
+
+#yum install unit-devel unit-go unit-jsc8 unit-jsc11 \
+#      unit-perl unit-php unit-python27 unit-python36
+
+#yum config-manager --set-disabled AppStream
+
+- name: Install
+  yum: 
+    name: "{{ item }}"
+    state: present
+    disablerepo: remi*
+  loop:
+    - unit
+    - unit-devel
+    #- unit-php
+
+- name: Install
+  yum: 
+    name: "{{ item }}"
+    state: present
+    #disablerepo: remi*
+  loop:
+   #- unit
+    #- unit-devel
+    - unit-php
+
+- name: Ensure directory exists
+  file:
+    path: "{{ ansible_role_nginx_applicatio_path }}"
+    state: directory
+    #owner: "{{ ansible_role_wordpress_user }}"
+    #roup: "{{ ansible_role_wordpress_group }}"
+    mode: 0755
+  
+- name: Copy config for application
+  template:
+    src: wordpress.config.j2
+    dest: "{{ ansible_role_nginx_applicatio_path }}/wordpress.config"
+
+- name: "Ensure Unit is started and enabled at boot."
+  systemd:
+    name: unit
+    state: started
+    enabled: yes
+
+- name: Loading configuration
+  shell: curl -X PUT --data-binary @{{ ansible_role_nginx_applicatio_path }}/wordpress.config --unix-socket /var/run/unit/control.sock http://localhost/config
+  #uri:
+  #  url: http://localhost/config
+  #  method: PUT
+#curl -X PUT --data-binary @/home/wordpress/site/wordpress.config --unix-socket /var/run/unit/control.sock http://localhost/config
+
+### https://www.nginx.com/blog/installing-wordpress-with-nginx-unit/
+
+#####
+#ln -s ../sites-available/unit_wordpress_vhost.conf.conf ./unit_wordpress_vhost.conf.conf
+
+
+
+
+
+
+#curl -X PUT --data-binary @/usr/share/doc/unit-php/unit.example-php-config --unix-socket /var/run/unit/control.sock http://localhost/config
+#curl http://localhost:8300/
+
+
+## Test
+#unit.example_php_config
+
+#- name: Test config
+#  template: 
+#    src: unit_example_php_config.j2
+#    dest: /usr/share/doc/unit-php/unit_example_php_config
+#- name: Create unit test root directory
+#  file:
+#    path: /usr/share/doc/unit-php/root
+#    state: directory
+#- name: Copy test aplication
+#  copy:
+#    src: phpinfo.php
+#    dest: /usr/share/doc/unit-php/root/index.php
+#- name: Run test aplication
+#  command: curl -X PUT --data-binary @/usr/share/doc/unit-php/unit_example_php_config --unix-socket /var/run/unit/control.sock http://localhost/config
+
+#- name: Test 
+#  shell: curl -s http://localhost:8300/ | grep "PHP Version" | wc -l
+#  register: unit
+
